@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Species Detection</title>
+    <style>
+        /* Reset some default styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body and layout */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-image: url('/static/background.avif'); /* Path to the uploaded image */
+            background-size: cover;
+            background-position: center;
+            color: #333;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent background */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 40px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        h1 {
+            font-size: 36px;
+            color: #1ae843;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 24px;
+            margin-top: 20px;
+            color: #333;
+        }
+
+        button {
+            background-color: #1ae854;
+            color: white;
+            padding: 12px 25px;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #19c116;
+        }
+
+        input[type="file"] {
+            margin-bottom: 20px;
+            font-size: 16px;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        input[type="file"]:hover {
+            border-color: #39e81a;
+        }
+
+        #results {
+            display: none;
+            margin-top: 30px;
+        }
+
+        #results img, #results iframe {
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 100%;
+            margin-top: 20px;
+        }
+
+        iframe {
+            border: none;
+        }
+
+        /* Loading spinner */
+        #loader {
+            display: none;
+            font-size: 18px;
+            color: #1ae832;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Species Detection</h1>
+        <form id="uploadForm">
+            <input type="file" name="file" accept="image/*" required>
+            <button type="submit">Upload and Process</button>
+        </form>
+
+        <!-- Loader Spinner -->
+        <div id="loader">Processing... Please wait.</div>
+
+        <div id="results">
+            <h2>Results:</h2>
+            <h3>Marked Image:</h3>
+            <img id="markedImage" src="" alt="Marked Image">
+            <h3>Map:</h3>
+            <iframe id="mapFrame" src="" style="width:100%; height:500px;" frameborder="0"></iframe>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Show loader
+            document.getElementById('loader').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+
+            const formData = new FormData(this);
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide loader
+                document.getElementById('loader').style.display = 'none';
+
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
+                // Show results
+                document.getElementById('results').style.display = 'block';
+
+                // Update marked image
+                document.getElementById('markedImage').src = data.image_url;
+
+                // Update map frame
+                document.getElementById('mapFrame').src = data.map_url;
+            })
+            .catch(error => {
+                // Hide loader in case of error
+                document.getElementById('loader').style.display = 'none';
+                console.error('Error:', error);
+                alert("An error occurred while processing the file. Please try again.");
+            });
+        });
+    </script>
+</body>
+</html>
